@@ -109,7 +109,6 @@ required = [
     ".github/workflows/ci.yml",
     ".github/workflows/platform-validation.yml",
     "deploy/base/kustomization.yaml",
-    "scripts/verify-public-package.sh",
     "scripts/set-release.py",
     "docs/CODE-REVIEW.md",
     "docs/FIRST-RELEASE.md",
@@ -150,7 +149,6 @@ for marker in (
     "--format spdx-json",
     "docker push",
     "scripts/set-release.py",
-    "scripts/verify-public-package.sh",
     "create-pull-request@v8",
     "actions/checkout@v6",
     "actions/setup-python@v6",
@@ -176,6 +174,14 @@ catalog_documents = load_documents(ROOT / "catalog-info.yaml")
 kinds = {str(item.get("kind", "")) for item in catalog_documents if isinstance(item, dict)}
 check({"Component", "API"}.issubset(kinds), "catalog-info.yaml must define Component and API")
 check("backstage.io/techdocs-ref: dir:." in (ROOT / "catalog-info.yaml").read_text(), "TechDocs annotation missing")
+
+service_account = (ROOT / "deploy/base/service-account.yaml").read_text(encoding="utf-8")
+check("imagePullSecrets:" in service_account, "ServiceAccount does not reference an image pull Secret")
+check("name: ghcr-pull-secret" in service_account, "ServiceAccount uses the wrong image pull Secret")
+external_secret = (ROOT / "deploy/base/external-secret.yaml").read_text(encoding="utf-8")
+check("kind: ExternalSecret" in external_secret, "GHCR ExternalSecret missing")
+check("name: kubernetes-platform-secrets" in external_secret, "ExternalSecret uses the wrong ClusterSecretStore")
+check("verify-public-package" not in ci, "CI still contains the public-only GHCR gate")
 
 for path in sorted(ROOT.rglob("*.yaml")) + sorted(ROOT.rglob("*.yml")):
     try:

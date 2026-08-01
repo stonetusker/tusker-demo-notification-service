@@ -24,13 +24,12 @@ Pull requests run formatting, linting, type checks, unit tests, current-source G
 1. builds an immutable image;
 2. scans the image and generates an SPDX SBOM;
 3. publishes immutable and `main` GHCR tags;
-4. verifies that the immutable tag exists;
-5. verifies anonymous pull access for the public demo path;
-6. opens a release PR updating only `deploy/overlays/development/kustomization.yaml`.
+4. verifies the immutable tag through the authenticated GitHub Actions session;
+5. opens a release PR updating only `deploy/overlays/development/kustomization.yaml`.
 
-For the first version of the GHCR package, a platform owner changes its visibility to **Public** once and reruns the workflow. The workflow logs out of GHCR and verifies anonymous manifest access before it creates a release PR. Future versions retain the package visibility. This prevents Argo CD from onboarding an image that would later fail with `ImagePullBackOff`.
+The package may remain private or be made public. Kubernetes always uses the `ghcr-pull-secret` attached to the service account. TuskerBlueprint stores the source GHCR credential in Kubernetes and External Secrets Operator materializes it through an explicit per-namespace `ExternalSecret`. No registry credential is committed to this repository.
 
-After the release PR is approved and merged, Argo CD reads this repository directly and deploys the development overlay into `demo-service-development`.
+After the release PR is approved and merged, Argo CD reads this repository directly and deploys the development overlay into `demo-service-development`. Argo CD organization-level repository credentials allow this repository itself to be public or private.
 
 ## Runtime access
 
@@ -44,7 +43,7 @@ Open `http://localhost:8081/`.
 
 - Application team: `group:default/developers`
 - Application source, tests, docs and deployment overlays: this repository
-- Platform, Backstage templates and Argo CD registration: `stonetusker/tuskerblueprint`
+- Platform, Backstage templates and Argo CD/GHCR credentials: `stonetusker/tuskerblueprint`
 - Container image: `ghcr.io/stonetusker/tusker-demo-notification-service`
 
 See `SETUP.md`, `docs/FIRST-RELEASE.md`, `docs/runbook.md` and `docs/CODE-REVIEW.md`.

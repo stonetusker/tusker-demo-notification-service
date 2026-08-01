@@ -13,7 +13,6 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "scripts/set-release.py"
-      - "scripts/verify-public-package.sh"
       - ".github/workflows/ci.yml"
   push:
     branches: [main]
@@ -27,7 +26,6 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "scripts/set-release.py"
-      - "scripts/verify-public-package.sh"
       - ".github/workflows/ci.yml"
 
 permissions:
@@ -162,10 +160,6 @@ jobs:
           docker push "${IMAGE_NAME}:${GITHUB_SHA}"
           docker push "${IMAGE_NAME}:main"
           docker manifest inspect "${IMAGE_NAME}:${GITHUB_SHA}" >/dev/null
-
-      - name: Verify anonymous GHCR pull for Argo CD
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: scripts/verify-public-package.sh "${GITHUB_SHA}"
 
       - name: Update development release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
