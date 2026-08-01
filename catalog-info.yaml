@@ -1,0 +1,61 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: demo-service
+  title: StoneTusker Customer Experience Hub
+  description: Executive-friendly notification application used to demonstrate Backstage, secure CI/CD, GitOps, Kubernetes and observability
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: stonetusker/tusker-demo-notification-service
+    argocd/app-name: demo-service-development
+    argocd/instance-name: development
+    backstage.io/kubernetes-id: demo-service
+    backstage.io/kubernetes-namespace: demo-service-development
+  tags:
+    - buyer-demo
+    - fastapi
+    - devsecops
+    - gitops
+    - kubernetes
+    - observability
+  links:
+    - url: http://localhost:8081/
+      title: Demo application UI
+      icon: web
+    - url: https://github.com/stonetusker/tusker-demo-notification-service
+      title: Application source
+      icon: github
+    - url: https://github.com/stonetusker/tusker-demo-notification-service/actions
+      title: Delivery workflows
+      icon: github
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group:default/developers
+  system: tuskerblueprint
+  providesApis:
+    - demo-service-api
+  dependsOn:
+    - component:default/argocd
+    - component:default/prometheus
+    - component:default/grafana
+    - component:default/loki
+    - resource:default/tuskerblueprint-development-cluster
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: demo-service-api
+  title: StoneTusker Customer Notification API
+  description: Notification API used by the StoneTusker Customer Experience Hub demo
+  tags:
+    - openapi
+    - buyer-demo
+    - fastapi
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: group:default/developers
+  system: tuskerblueprint
+  definition:
+    $text: ./openapi.yaml

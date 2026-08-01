@@ -1,0 +1,49 @@
+name: Metadata and GitOps Validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "catalog-info.yaml"
+      - "openapi.yaml"
+      - "mkdocs.yml"
+      - "docs/**"
+      - "deploy/**"
+      - ".github/workflows/platform-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "catalog-info.yaml"
+      - "openapi.yaml"
+      - "mkdocs.yml"
+      - "docs/**"
+      - "deploy/**"
+      - ".github/workflows/platform-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: python -m pip install "PyYAML==6.0.3"
+      - name: Validate repository metadata
+        run: python scripts/validate_repository.py
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v5
+        with:
+          version: v1.31.4
+      - name: Render all Kubernetes overlays
+        run: |
+          set -euo pipefail
+          for environment in development staging production; do
+            kubectl kustomize "deploy/overlays/${environment}" > "/tmp/${environment}.yaml"
+            test -s "/tmp/${environment}.yaml"
+          done

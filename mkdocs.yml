@@ -1,0 +1,18 @@
+site_name: StoneTusker Customer Experience Hub
+site_description: Application, delivery, operations and security documentation for the demo service
+repo_url: https://github.com/stonetusker/tusker-demo-notification-service
+edit_uri: edit/main/docs/
+docs_dir: docs
+nav:
+  - Overview: index.md
+  - Architecture: architecture.md
+  - Development: development.md
+  - Delivery and GitOps: delivery.md
+  - First release: FIRST-RELEASE.md
+  - Operations: runbook.md
+  - Rollback: rollback.md
+  - Security: security.md
+  - Code review: CODE-REVIEW.md
+  - SLO: slo.md
+plugins:
+  - techdocs-core

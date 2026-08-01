@@ -1,0 +1,12 @@
+title = "Tusker demo-service current-source Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow explicit non-secret demo placeholders only"
+regexes = [
+  '''example\.invalid''',
+  '''CHANGE_ME''',
+  '''REPLACE_WITH_[A-Z0-9_]+'''
+]
