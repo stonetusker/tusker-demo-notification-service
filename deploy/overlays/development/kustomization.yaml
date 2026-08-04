@@ -27,3 +27,7 @@ labels:
 
 commonAnnotations:
   tuskerblueprint.io/release-sha: c831a4954b73c6eade29f1fbd814af48aa4a10c4
+  tuskerblueprint.io/release-sha: main
+
+patches:
+  - path: deployment-selector-compatibility.yaml
