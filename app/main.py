@@ -8,7 +8,7 @@ import time
 import uuid
 from collections import OrderedDict
 from datetime import UTC, datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 from threading import Lock
 from typing import Annotated
@@ -54,7 +54,7 @@ APPLICATION_INFO.labels(
 ).set(1)
 
 
-class NotificationChannel(str, Enum):
+class NotificationChannel(StrEnum):
     email = "email"
     sms = "sms"
     webhook = "webhook"
