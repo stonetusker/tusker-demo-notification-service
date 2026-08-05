@@ -18,3 +18,8 @@ spec:
         app.kubernetes.io/name: demo-service
         app.kubernetes.io/part-of: tuskerblueprint
         backstage.io/kubernetes-id: demo-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
