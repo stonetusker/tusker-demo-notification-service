@@ -1,4 +1,4 @@
-# StoneTusker Customer Experience Hub
+# Stonetusker Customer Experience Hub
 
 This is the maintained application used to demonstrate the TuskerBlueprint IDP. It includes a colorful browser UI, a notification API, structured logs, Prometheus metrics, controlled failure modes and immutable GitOps delivery.
 

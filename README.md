@@ -1,6 +1,6 @@
-# StoneTusker Demo Notification Service
+# Stonetusker Demo Notification Service
 
-This repository is the application side of the StoneTusker TuskerBlueprint demonstration. It owns the FastAPI service, executive browser UI, tests, OpenAPI definition, TechDocs, CI/CD and Kubernetes overlays. The IDP platform and Argo CD application registration live in `stonetusker/tuskerblueprint`.
+This repository is the application side of the Stonetusker TuskerBlueprint demonstration. It owns the FastAPI service, executive browser UI, tests, OpenAPI definition, TechDocs, CI/CD and Kubernetes overlays. The IDP platform and Argo CD application registration live in `stonetusker/tuskerblueprint`.
 
 ## Local developer workflow
 

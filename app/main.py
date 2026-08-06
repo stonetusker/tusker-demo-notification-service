@@ -1,4 +1,4 @@
-"""Customer Notification API used in the StoneTusker delivery-platform demo."""
+"""Customer Notification API used in the Stonetusker delivery-platform demo."""
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ NOTIFICATION_STORE: OrderedDict[str, NotificationRecord] = OrderedDict()
 NOTIFICATION_STORE_LOCK = Lock()
 
 app = FastAPI(
-    title="StoneTusker Customer Experience Hub",
+    title="Stonetusker Customer Experience Hub",
     description=(
         "A deterministic reference workload used to demonstrate secure CI, GitOps, "
         "observability, failure detection, and rollback. It does not send real messages."

@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: demo-service
-  title: StoneTusker Customer Experience Hub
+  title: Stonetusker Customer Experience Hub
   description: Executive-friendly notification application used to demonstrate Backstage, secure CI/CD, GitOps, Kubernetes and observability
   annotations:
     backstage.io/techdocs-ref: dir:.
@@ -46,8 +46,8 @@ apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: demo-service-api
-  title: StoneTusker Customer Notification API
-  description: Notification API used by the StoneTusker Customer Experience Hub demo
+  title: Stonetusker Customer Notification API
+  description: Notification API used by the Stonetusker Customer Experience Hub demo
   tags:
     - openapi
     - buyer-demo
