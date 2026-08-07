@@ -8,7 +8,7 @@ resources:
 images:
   - name: ghcr.io/stonetusker/tusker-demo-notification-service
     newName: ghcr.io/stonetusker/tusker-demo-notification-service
-    newTag: c831a4954b73c6eade29f1fbd814af48aa4a10c4
+    newTag: 0b7297cd080f96b0e8c5efc44026fa3d3043f2ae
 
 replicas:
   - name: demo-service
@@ -26,7 +26,7 @@ labels:
       app.kubernetes.io/environment: development
 
 commonAnnotations:
-  tuskerblueprint.io/release-sha: c831a4954b73c6eade29f1fbd814af48aa4a10c4
+  tuskerblueprint.io/release-sha: 0b7297cd080f96b0e8c5efc44026fa3d3043f2ae
 
 patches:
   - path: deployment-selector-compatibility.yaml
