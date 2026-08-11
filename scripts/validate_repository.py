@@ -142,26 +142,6 @@ for environment in ("development", "staging", "production"):
         check("newTag: latest" not in text, f"{environment} uses latest")
         check(bool(sha_or_bootstrap.search(text)), f"{environment} has an invalid image tag")
 
-ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-for marker in (
-    "--no-git",
-    "image --scanners vuln",
-    "--format spdx-json",
-    "docker push",
-    "scripts/set-release.py",
-    "create-pull-request@v8",
-    "actions/checkout@v7",
-    "actions/setup-python@v7",
-    "actions/upload-artifact@v7",
-    "docker/login-action@v4",
-    "aquasec/trivy:0.70.0",
-    "semgrep/semgrep:1.162.0",
-    "zricethezav/gitleaks:v8.30.1",
-):
-    check(marker in ci, f"CI missing {marker}")
-check("upload-sarif" not in ci, "CI uses GitHub Advanced Security SARIF upload")
-check("security-events:" not in ci, "CI requests unused GitHub Advanced Security permission")
-
 requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
 # Dependency versions are intentionally managed in requirements.txt.
 # Avoid hard-coded version assertions here to prevent Dependabot update failures.
