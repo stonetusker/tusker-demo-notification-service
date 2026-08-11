@@ -22,6 +22,9 @@ metadata:
     - url: http://localhost:8081/
       title: Demo application UI
       icon: web
+    - url: http://localhost:3000/d/tusker-service-overview/tusker-service-overview?var-environment=development&var-service=demo-service
+      title: Service dashboard in Grafana
+      icon: dashboard
     - url: https://github.com/stonetusker/tusker-demo-notification-service
       title: Application source
       icon: github

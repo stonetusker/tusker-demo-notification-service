@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -110,6 +111,7 @@ required = [
     ".github/workflows/platform-validation.yml",
     "deploy/base/kustomization.yaml",
     "scripts/set-release.py",
+    "scripts/verify.sh",
     "docs/CODE-REVIEW.md",
     "docs/FIRST-RELEASE.md",
 ]
@@ -161,6 +163,7 @@ check("name: ghcr-pull-secret" in service_account, "ServiceAccount uses the wron
 external_secret = (ROOT / "deploy/base/external-secret.yaml").read_text(encoding="utf-8")
 check("kind: ExternalSecret" in external_secret, "GHCR ExternalSecret missing")
 check("name: kubernetes-platform-secrets" in external_secret, "ExternalSecret uses the wrong ClusterSecretStore")
+ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 check("verify-public-package" not in ci, "CI still contains the public-only GHCR gate")
 
 for path in sorted(ROOT.rglob("*.yaml")) + sorted(ROOT.rglob("*.yml")):
@@ -174,12 +177,33 @@ for path in sorted(ROOT.rglob("*.yaml")) + sorted(ROOT.rglob("*.yml")):
                 f"Kubernetes Secret manifest must not be committed: {path.relative_to(ROOT)}"
             )
 
-for cache_name in ("__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"):
-    for cache_path in ROOT.rglob(cache_name):
-        errors.append(f"generated cache directory committed: {cache_path.relative_to(ROOT)}")
-for artifact_name in (".coverage", "coverage.xml", "gitleaks.sarif", "semgrep.sarif", "sbom.spdx.json"):
-    for artifact_path in ROOT.rglob(artifact_name):
-        errors.append(f"generated test artifact committed: {artifact_path.relative_to(ROOT)}")
+tracked_files: set[Path] = set()
+if (ROOT / ".git").exists():
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-z"],
+        check=True,
+        capture_output=True,
+    ).stdout
+    tracked_files = {
+        Path(item.decode("utf-8"))
+        for item in tracked.split(b"\0")
+        if item
+    }
+
+for tracked_path in tracked_files:
+    if any(
+        part in {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
+        for part in tracked_path.parts
+    ):
+        errors.append(f"generated cache path committed: {tracked_path}")
+    if tracked_path.name in {
+        ".coverage",
+        "coverage.xml",
+        "gitleaks.sarif",
+        "semgrep.sarif",
+        "sbom.spdx.json",
+    }:
+        errors.append(f"generated test artifact committed: {tracked_path}")
 
 if errors:
     for error in errors:
