@@ -131,3 +131,7 @@ def test_metrics_endpoint(monkeypatch) -> None:
     assert response.status_code == 200
     assert "application_info" in response.text
     assert "http_requests_total" in response.text
+    assert "notification_store_records" in response.text
+    assert 'notification_requests_total{channel="email"' in response.text
+    assert 'notification_requests_total{channel="sms"' in response.text
+    assert 'notification_requests_total{channel="webhook"' in response.text

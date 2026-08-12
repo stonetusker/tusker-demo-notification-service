@@ -42,6 +42,11 @@ NOTIFICATIONS = Counter(
     "Accepted notification requests",
     ["service", "environment", "channel"],
 )
+NOTIFICATION_STORE_RECORDS = Gauge(
+    "notification_store_records",
+    "Current number of notification records retained by the demo service",
+    ["service", "environment"],
+)
 APPLICATION_INFO = Gauge(
     "application_info",
     "Static information about the running application release",
@@ -52,6 +57,19 @@ APPLICATION_INFO.labels(
     environment=settings.environment,
     version=settings.version,
 ).set(1)
+NOTIFICATION_STORE_RECORDS.labels(
+    service=settings.service_name,
+    environment=settings.environment,
+).set(0)
+
+# Pre-create the bounded channel series so a healthy channel with no requests is
+# rendered as zero in Grafana instead of being mistaken for missing telemetry.
+for notification_channel in ("email", "sms", "webhook"):
+    NOTIFICATIONS.labels(
+        service=settings.service_name,
+        environment=settings.environment,
+        channel=notification_channel,
+    )
 
 
 class NotificationChannel(StrEnum):
@@ -260,6 +278,12 @@ def create_notification(
         NOTIFICATION_STORE.move_to_end(notification_id)
         while len(NOTIFICATION_STORE) > MAX_NOTIFICATION_RECORDS:
             NOTIFICATION_STORE.popitem(last=False)
+        retained_records = len(NOTIFICATION_STORE)
+
+    NOTIFICATION_STORE_RECORDS.labels(
+        service=settings.service_name,
+        environment=settings.environment,
+    ).set(retained_records)
 
     NOTIFICATIONS.labels(
         service=settings.service_name,
