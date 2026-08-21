@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 import uuid
 from collections import OrderedDict
@@ -16,6 +17,12 @@ from typing import Annotated
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from pydantic import BaseModel, Field
 
@@ -26,6 +33,25 @@ configure_logging()
 settings = Settings.from_environment()
 logger = logging.getLogger(settings.service_name)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+resource = Resource.create(
+    {
+        "service.name": settings.service_name,
+        "deployment.environment": settings.environment,
+    }
+)
+tracer_provider = TracerProvider(resource=resource)
+otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+if otlp_endpoint:
+    tracer_provider.add_span_processor(
+        BatchSpanProcessor(
+            OTLPSpanExporter(
+                endpoint=otlp_endpoint,
+                insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true").lower() == "true",
+            )
+        )
+    )
+trace.set_tracer_provider(tracer_provider)
 
 REQUESTS = Counter(
     "http_requests_total",
@@ -113,6 +139,7 @@ app = FastAPI(
     ),
     version="1.2.0",
 )
+FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider)
 app.mount("/assets", StaticFiles(directory=STATIC_DIR), name="assets")
 
 
@@ -122,6 +149,9 @@ async def request_observability(request: Request, call_next):  # type: ignore[no
     supplied_correlation_id = request.headers.get("x-correlation-id", "").strip()
     correlation_id = supplied_correlation_id[:128] or str(uuid.uuid4())
     request.state.correlation_id = correlation_id
+    current_span = trace.get_current_span()
+    if current_span.is_recording():
+        current_span.set_attribute("correlation_id", correlation_id)
     mode = get_failure_mode()
 
     if mode == "latency" and request.url.path.startswith("/api/"):
@@ -163,6 +193,9 @@ async def request_observability(request: Request, call_next):  # type: ignore[no
     route = request.scope.get("route")
     route_path = getattr(route, "path", None) or "<unmatched>"
     elapsed = time.perf_counter() - started
+    current_span = trace.get_current_span()
+    span_context = current_span.get_span_context()
+    trace_id = format(span_context.trace_id, "032x") if span_context.is_valid else None
 
     REQUESTS.labels(
         service=settings.service_name,
@@ -177,6 +210,22 @@ async def request_observability(request: Request, call_next):  # type: ignore[no
         method=request.method,
         route=route_path,
     ).observe(elapsed)
+    logger.info(
+        "request_completed",
+        extra={
+            "service": settings.service_name,
+            "environment": settings.environment,
+            "version": settings.version,
+            "trace_id": trace_id,
+            "correlation_id": correlation_id,
+            "method": request.method,
+            "path": request.url.path,
+            "route": route_path,
+            "status_code": response.status_code,
+            "duration_ms": round(elapsed * 1000, 2),
+            "failure_mode": mode,
+        },
+    )
 
     logger.info(
         "request_completed",

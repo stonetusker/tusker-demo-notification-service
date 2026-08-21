@@ -62,6 +62,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://alloy.monitoring.svc.cluster.local:4317
+            - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+              value: grpc
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
